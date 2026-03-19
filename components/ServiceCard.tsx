@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { FaReact, FaNodeJs, FaMobileAlt, FaDatabase, FaFigma, FaJs } from "react-icons/fa";
+import type { ReactElement } from "react";
 
 interface ServiceCardProps {
   title: string;
@@ -10,7 +11,7 @@ interface ServiceCardProps {
   tags: string[];
 }
 
-const tagIcons: Record<string, JSX.Element> = {
+const tagIcons: Record<string, ReactElement> = {
   "React": <FaReact className="inline-block mr-1" />,
   "Next.js": <FaJs className="inline-block mr-1" />,
   "Node.js": <FaNodeJs className="inline-block mr-1" />,
