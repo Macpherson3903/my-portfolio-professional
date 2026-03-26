@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Portfolio
 
-## Getting Started
+Next.js portfolio with projects (Prisma + SQLite), rule-based quotes, blog with admin posting, and a market/economy news ticker on blog pages.
 
-First, run the development server:
+## Setup
+
+1. Copy environment variables:
+
+```bash
+cp .env.example .env
+```
+
+2. Set `DATABASE_URL` (SQLite):
+
+```env
+DATABASE_URL="file:./dev.db"
+```
+
+3. Set admin and session secrets (use long random strings in production):
+
+```env
+ADMIN_SECRET="your-admin-login-secret"
+SESSION_SECRET="your-cookie-signing-secret"
+```
+
+4. Create the database and seed sample data:
+
+```bash
+npm run db:push
+npm run db:seed
+```
+
+5. Run the dev server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Scripts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Command | Description |
+|--------|-------------|
+| `npm run dev` | Development server |
+| `npm run build` | Production build (runs `prisma generate`) |
+| `npm run start` | Start production server |
+| `npm run lint` | ESLint |
+| `npm run test` | Vitest unit tests |
+| `npm run db:push` | Apply Prisma schema to SQLite |
+| `npm run db:seed` | Seed projects and sample post |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Routes
 
-## Learn More
+- `/` — Home with featured projects
+- `/projects` — All projects (search & sort)
+- `/projects/[slug]` — Project detail
+- `/quote` — Indicative quote (min $150)
+- `/blog` — Published posts
+- `/blog/[slug]` — Post (Markdown) + news ticker
+- `/admin/login` — Admin login (`ADMIN_SECRET`)
+- `/admin/posts` — Manage posts (CRUD, publish)
 
-To learn more about Next.js, take a look at the following resources:
+## Deploy notes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Use a hosted database (e.g. Postgres) for production; update `DATABASE_URL` and `provider` in `prisma/schema.prisma`.
+- Set `ADMIN_SECRET` and `SESSION_SECRET` in the host environment.
+- Run migrations or `db push` as appropriate for your provider.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This is a [Next.js](https://nextjs.org) project using the App Router, Tailwind CSS v4, and Prisma ORM.

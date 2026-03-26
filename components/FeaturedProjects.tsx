@@ -1,63 +1,39 @@
-// components/FeaturedProjects.tsx
-"use client";
-import { useEffect, useState } from "react";
+import Link from "next/link";
 import ProjectCard from "./ProjectCard";
+import { getFeaturedProjects } from "@/lib/projects-data";
 
-interface Repo {
-    id: number;
-    name: string;
-    description: string | null;
-    html_url: string;
-    homepage: string | null;
-    fork: boolean;
-    pushed_at: string;
-    languages: string[];
-}
-
-export default function FeaturedProjects() {
-    const [repos, setRepos] = useState<Repo[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        async function fetchRepos() {
-            try {
-                const res = await fetch("/api/repos");
-                const data = await res.json();
-                if (data.error) {
-                    console.error(data.error);
-                    setRepos([]);
-                } else {
-                    setRepos(data);
-                }
-            } catch (err) {
-                console.error("Failed to fetch repos:", err);
-                setRepos([]);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        fetchRepos();
-    }, []);
-
-    if (loading) return <p className="text-gray-400">Loading projects...</p>;
-    if (repos.length === 0) return <p className="text-gray-400">No projects found.</p>;
-
+export default async function FeaturedProjects() {
+  const projects = await getFeaturedProjects();
+  if (!projects.length) {
     return (
-        <section className="py-20 px-6 max-w-7xl mx-auto">
-            <h2 className="text-3xl font-bold mb-12">Featured Projects</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {repos.map((repo) => (
-                    <ProjectCard
-                        key={repo.id}
-                        name={repo.name}
-                        description={repo.description}
-                        languages={repo.languages}
-                        githubUrl={repo.html_url}
-                        liveUrl={repo.homepage || null}
-                    />
-                ))}
-            </div>
-        </section>
+      <section className="py-20 px-6 max-w-7xl mx-auto">
+        <h2 className="text-3xl font-bold mb-12">Featured Projects</h2>
+        <p className="text-gray-400">No projects found.</p>
+      </section>
     );
+  }
+
+  return (
+    <section className="py-20 px-6 max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12">
+        <h2 className="text-3xl font-bold">Featured Projects</h2>
+        <Link href="/projects" className="text-red-500 hover:text-red-400 text-sm font-medium">
+          View all projects
+        </Link>
+      </div>
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {projects.map((repo) => (
+          <ProjectCard
+            key={repo.id}
+            name={repo.title}
+            slug={repo.slug}
+            description={repo.description}
+            languages={repo.stack.length ? repo.stack : ["Repo"]}
+            githubUrl={repo.repoUrl ?? "#"}
+            liveUrl={repo.liveUrl}
+          />
+        ))}
+      </div>
+    </section>
+  );
 }

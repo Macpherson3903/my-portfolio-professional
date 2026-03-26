@@ -1,16 +1,26 @@
-import Header from "@/components/Header"
+import Header from "@/components/Header";
+import QuoteForm from "@/components/QuoteForm";
+import type { Metadata } from "next";
 
+export const metadata: Metadata = {
+  title: "Quote",
+  description: "Get an indicative quote based on your project description.",
+};
 
-
-export default function Quote() {
-    return (
-        <>
-        <Header />
-        <section className="flex flex-col items-center justify-center h-screen gap-3">
-            <h1 className="text-5xl">Feature not available at the moment</h1>
-            <p>Contact Me @ <span className="text-red-500">08069052314 / macpherson885@gmail.com</span></p>
-            </section>
-            </>
-
-    )
+export default function QuotePage() {
+  return (
+    <>
+      <Header />
+      <main className="min-h-screen bg-black pt-8 pb-24 px-6">
+        <div className="max-w-5xl mx-auto mb-10">
+          <h1 className="text-4xl md:text-5xl font-bold mb-3">Request a quote</h1>
+          <p className="text-neutral-400 max-w-2xl">
+            Share your idea. The system analyzes scope signals and returns a structured brief plus an indicative price
+            band. Minimum engagement starts at $150.
+          </p>
+        </div>
+        <QuoteForm />
+      </main>
+    </>
+  );
 }
