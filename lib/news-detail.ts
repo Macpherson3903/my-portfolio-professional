@@ -1,3 +1,5 @@
+import { decodeHtmlEntities } from "@/lib/html-entities";
+
 export type NewsCategorySlug = "crypto" | "stocks" | "economy";
 
 export const NEWS_CATEGORY_SLUGS: NewsCategorySlug[] = ["crypto", "stocks", "economy"];
@@ -87,20 +89,19 @@ export function parseRssArticles(xml: string, max = 25, opts?: { skipTitleSubstr
     const block = m[1];
     const titleRaw =
       block.match(/<title[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/i)?.[1] ?? "";
-    let title = stripTags(titleRaw);
+    let title = decodeHtmlEntities(stripTags(titleRaw));
     if (!title) continue;
     if (skip.some((s) => title.toLowerCase().includes(s))) continue;
 
-    let href =
-      stripTags(block.match(/<link[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/link>/i)?.[1] ?? "").split(
-        /\s/
-      )[0] ?? "";
+    let href = decodeHtmlEntities(
+      stripTags(block.match(/<link[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/link>/i)?.[1] ?? "")
+    ).split(/\s/)[0] ?? "";
     if (!href || !href.startsWith("http")) {
       const gu = block.match(/<guid[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/guid>/i)?.[1];
-      href = gu ? stripTags(gu).split(/\s/)[0] : "";
+      href = gu ? decodeHtmlEntities(stripTags(gu)).split(/\s/)[0] : "";
     }
     if (!href || !href.startsWith("http")) {
-      href = extractFirstHttpUrl(block);
+      href = decodeHtmlEntities(extractFirstHttpUrl(block));
     }
     if (!href.startsWith("http")) continue;
     if (seenHref.has(href)) continue;
@@ -108,7 +109,7 @@ export function parseRssArticles(xml: string, max = 25, opts?: { skipTitleSubstr
 
     const descRaw =
       block.match(/<description[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/description>/i)?.[1] ?? "";
-    let summary = stripTags(descRaw);
+    let summary = decodeHtmlEntities(stripTags(descRaw));
     if (summary.length > 260) summary = `${summary.slice(0, 257)}…`;
 
     items.push({ title, href, summary });
@@ -239,10 +240,12 @@ type CoinGeckoDetailJson = {
 
 function blurbFromDescription(en?: string): string {
   if (!en) return "";
-  const plain = en
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  const plain = decodeHtmlEntities(
+    en
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+  );
   if (!plain) return "";
   return plain.length > 480 ? `${plain.slice(0, 477)}…` : plain;
 }

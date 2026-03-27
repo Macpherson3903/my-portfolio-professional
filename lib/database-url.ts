@@ -49,17 +49,14 @@ export function normalizePostgresUrlForPrisma(url: string): string {
 }
 
 /**
- * Env keys checked in order. Neon’s Vercel integration often uses a `DATABASE_` prefix
- * (e.g. DATABASE_POSTGRES_PRISMA_URL). Pooled URLs are preferred for serverless.
+ * Only Neon/Vercel-managed names (same keys as the “Neon” integration on Vercel).
+ * Order: pooled app URL first, then fallbacks. Other `DATABASE_*` keys (password, PGHOST, etc.)
+ * are not Postgres connection URLs — use the URL fields below.
  */
 export const DATABASE_URL_ENV_KEYS = [
   "DATABASE_POSTGRES_PRISMA_URL",
-  "POSTGRES_PRISMA_URL",
   "DATABASE_URL",
   "DATABASE_POSTGRES_URL",
-  "POSTGRES_URL",
-  "PRISMA_DATABASE_URL",
-  "NEON_DATABASE_URL",
   "DATABASE_POSTGRES_URL_NON_POOLING",
   "DATABASE_POSTGRES_URL_NO_SSL",
 ] as const;

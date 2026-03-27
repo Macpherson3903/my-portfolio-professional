@@ -1,3 +1,5 @@
+import { decodeHtmlEntities } from "@/lib/html-entities";
+
 export type NewsTickerItem = {
   id: string;
   category: "crypto" | "finance" | "economy";
@@ -44,7 +46,9 @@ function parseRssTitles(xml: string, max = 6): string[] {
   let m: RegExpExecArray | null;
   while ((m = re.exec(xml)) && titles.length < max) {
     const raw = m[1]?.replace(/<[^>]+>/g, "").trim();
-    if (raw && !raw.toLowerCase().includes("yahoo")) titles.push(raw);
+    if (!raw) continue;
+    const title = decodeHtmlEntities(raw);
+    if (title && !title.toLowerCase().includes("yahoo")) titles.push(title);
   }
   return titles;
 }

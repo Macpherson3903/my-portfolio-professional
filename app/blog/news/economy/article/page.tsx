@@ -1,5 +1,6 @@
 import SiteShell from "@/components/SiteShell";
 import { decodeEconomyArticlePayload } from "@/lib/economy-article-payload";
+import { decodeHtmlEntities } from "@/lib/html-entities";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -11,9 +12,11 @@ type Props = { searchParams: Promise<{ d?: string }> };
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const { d } = await searchParams;
   const article = d ? decodeEconomyArticlePayload(d) : null;
+  const t = article ? decodeHtmlEntities(article.title) : "";
+  const s = article ? decodeHtmlEntities(article.summary) : "";
   return {
-    title: article ? `${article.title} | Economy` : "Economy article",
-    description: article?.summary?.slice(0, 160),
+    title: article ? `${t} | Economy` : "Economy article",
+    description: s?.slice(0, 160),
   };
 }
 
@@ -23,16 +26,19 @@ export default async function EconomyArticlePage({ searchParams }: Props) {
   const article = decodeEconomyArticlePayload(d);
   if (!article) notFound();
 
+  const title = decodeHtmlEntities(article.title);
+  const summary = decodeHtmlEntities(article.summary);
+
   return (
     <SiteShell>
       <article className="max-w-2xl mx-auto px-6 pt-10 pb-28 bg-black">
         <Link href="/blog/news/economy" className="text-sm text-red-500 hover:text-red-400 mb-6 inline-block">
           ← World economy news
         </Link>
-        <h1 className="text-2xl md:text-3xl font-bold text-white mb-6 leading-tight">{article.title}</h1>
-        {article.summary ? (
+        <h1 className="text-2xl md:text-3xl font-bold text-white mb-6 leading-tight">{title}</h1>
+        {summary ? (
           <p className="text-neutral-400 text-sm md:text-base leading-relaxed mb-10 border-l-2 border-violet-500/40 pl-4">
-            {article.summary}
+            {summary}
           </p>
         ) : null}
         <p className="text-neutral-500 text-xs mb-4">

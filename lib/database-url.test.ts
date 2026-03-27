@@ -74,9 +74,10 @@ describe("resolveDatabaseUrl", () => {
     expect(resolveDatabaseUrl()).toBe("postgresql://from-prisma-pooler/db");
   });
 
-  it("uses POSTGRES_PRISMA_URL when DATABASE_URL is invalid", () => {
-    process.env.DATABASE_URL = "not-a-url";
-    process.env.POSTGRES_PRISMA_URL = "postgresql://x:y@host/db";
+  it("uses DATABASE_POSTGRES_URL when earlier keys are invalid", () => {
+    process.env.DATABASE_POSTGRES_PRISMA_URL = "not-a-url";
+    process.env.DATABASE_URL = "also-bad";
+    process.env.DATABASE_POSTGRES_URL = "postgresql://x:y@host/db";
     expect(resolveDatabaseUrl()).toBe("postgresql://x:y@host/db");
   });
 

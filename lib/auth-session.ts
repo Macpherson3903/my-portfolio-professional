@@ -3,16 +3,23 @@ import { createHmac, timingSafeEqual } from "crypto";
 export const ADMIN_SESSION_COOKIE = "admin_session";
 const MAX_AGE = 60 * 60 * 24 * 7;
 
+/** Prefer this for Route Handlers so local `next start` over http:// still gets a non-Secure cookie. */
+export function adminSessionCookieSecure(req: Request): boolean {
+  if (process.env.VERCEL === "1") return true;
+  return req.headers.get("x-forwarded-proto") === "https";
+}
+
 function sign(payload: string, secret: string) {
   return createHmac("sha256", secret).update(payload).digest("hex");
 }
 
 export function getSessionSecret() {
-  return process.env.SESSION_SECRET || process.env.ADMIN_SECRET || "";
+  const raw = process.env.SESSION_SECRET || process.env.ADMIN_SECRET || "";
+  return raw.replace(/\r\n/g, "\n").trim();
 }
 
 export function getAdminSecret() {
-  return process.env.ADMIN_SECRET || "";
+  return (process.env.ADMIN_SECRET || "").replace(/\r\n/g, "\n").trim();
 }
 
 export function verifyAdminSessionCookie(raw: string | undefined): boolean {

@@ -1,11 +1,10 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
 
 export default function AdminLoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [secret, setSecret] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -19,6 +18,7 @@ export default function AdminLoginForm() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
         body: JSON.stringify({ secret }),
       });
       if (!res.ok) {
@@ -27,8 +27,8 @@ export default function AdminLoginForm() {
         return;
       }
       const from = searchParams.get("from") || "/admin/posts";
-      router.push(from);
-      router.refresh();
+      // Full navigation so the browser reliably sends the new session cookie on Vercel / after Set-Cookie.
+      window.location.assign(from);
     } catch {
       setError("Network error");
     } finally {

@@ -9,19 +9,25 @@ import {
 
 const MAX_AGE = 60 * 60 * 24 * 7;
 
+export function adminSessionCookieOptions(maxAge: number = MAX_AGE, secure = false) {
+  return {
+    httpOnly: true as const,
+    secure,
+    sameSite: "lax" as const,
+    path: "/" as const,
+    maxAge,
+  };
+}
+
 export { getAdminSecret, getSessionSecret, verifyAdminSessionCookie };
 
+/** Prefer setting the cookie on a `NextResponse` in a Route Handler (see `/api/auth/login`). */
 export async function createAdminSession() {
   const value = buildAdminSessionCookieValue();
   if (!value) return;
   const jar = await cookies();
-  jar.set(ADMIN_SESSION_COOKIE, value, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: MAX_AGE,
-  });
+  const secure = process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
+  jar.set(ADMIN_SESSION_COOKIE, value, adminSessionCookieOptions(MAX_AGE, secure));
 }
 
 export async function clearAdminSession() {
