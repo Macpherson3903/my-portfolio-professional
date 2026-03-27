@@ -2,7 +2,7 @@ import SiteShell from "@/components/SiteShell";
 import MarkdownPost from "@/components/blog/MarkdownPost";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { getPublishedPostBySlug } from "@/lib/posts-data";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -11,10 +11,7 @@ type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const post = await prisma.post.findUnique({
-    where: { slug, published: true },
-    select: { title: true, excerpt: true },
-  });
+  const post = await getPublishedPostBySlug(slug);
   if (!post) return { title: "Post" };
   return {
     title: post.title,
@@ -24,9 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
-  const post = await prisma.post.findUnique({
-    where: { slug, published: true },
-  });
+  const post = await getPublishedPostBySlug(slug);
   if (!post) notFound();
 
   return (

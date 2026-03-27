@@ -40,6 +40,13 @@ npm run dev
 
 SQLite **does not work** on Vercel (no persistent writable database file). Use a hosted Postgres URL for `DATABASE_URL`.
 
+**If the site still errors after deploy:** open the deployment **Functions** log on Vercel. Typical fixes:
+
+- Set `DATABASE_URL` to Neon’s **pooled** connection string and run `npx prisma db push` against that database (tables must exist).
+- If Prisma reports SSL or auth errors, try removing `channel_binding=require` from the Neon URL (keep `sslmode=require`).
+- Set `NEXT_PUBLIC_SITE_URL` to your canonical URL (avoid typos; include `https://`). A bad value used to crash `metadataBase` — this repo now falls back safely.
+- Public pages fall back to **GitHub** for projects if Postgres is down; **blog** and **admin** still need a working database.
+
 1. In the Vercel project **Settings → Environment Variables**, add:
    - `DATABASE_URL` — Postgres connection string (Neon/Supabase/Vercel Postgres)
    - `NEXT_PUBLIC_SITE_URL` — your live site URL (e.g. `https://macpherson.vercel.app`)
@@ -53,7 +60,7 @@ SQLite **does not work** on Vercel (no persistent writable database file). Use a
    npm run db:seed
    ```
 
-3. Redeploy if the app errored before the database existed.
+3. Redeploy if needed after fixing env vars or the database.
 
 ## Scripts
 

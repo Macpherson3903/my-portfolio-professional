@@ -1,6 +1,6 @@
 import SiteShell from "@/components/SiteShell";
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { getPublishedPosts } from "@/lib/posts-data";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -11,17 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function BlogIndexPage() {
-  const posts = await prisma.post.findMany({
-    where: { published: true },
-    orderBy: { publishedAt: "desc" },
-    select: {
-      slug: true,
-      title: true,
-      excerpt: true,
-      publishedAt: true,
-      tags: true,
-    },
-  });
+  const posts = await getPublishedPosts();
 
   return (
     <SiteShell>
@@ -29,7 +19,10 @@ export default async function BlogIndexPage() {
         <h1 className="text-4xl font-bold mb-2">Blog</h1>
         <p className="text-neutral-400 mb-10">Notes, tutorials, and updates.</p>
         {!posts.length ? (
-          <p className="text-neutral-500">No published posts yet.</p>
+          <p className="text-neutral-500">
+            No published posts yet. Confirm <code className="text-neutral-400">DATABASE_URL</code> on Vercel and run{" "}
+            <code className="text-neutral-400">npx prisma db push</code> plus seed if needed.
+          </p>
         ) : (
           <ul className="space-y-8">
             {posts.map((p) => (

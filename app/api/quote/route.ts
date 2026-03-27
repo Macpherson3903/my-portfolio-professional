@@ -21,21 +21,27 @@ export async function POST(req: Request) {
     }
 
     const result = analyzeQuote(idea);
-    const saved = await prisma.quoteRequest.create({
-      data: {
-        name,
-        email,
-        rawIdea: idea,
-        refinedBrief: result.refinedBrief,
-        complexityScore: result.complexityScore,
-        estimatedPrice: result.estimatedPrice,
-        breakdown: JSON.stringify(result.breakdown),
-        status: "new",
-      },
-    });
+    let savedId: string | null = null;
+    try {
+      const saved = await prisma.quoteRequest.create({
+        data: {
+          name,
+          email,
+          rawIdea: idea,
+          refinedBrief: result.refinedBrief,
+          complexityScore: result.complexityScore,
+          estimatedPrice: result.estimatedPrice,
+          breakdown: JSON.stringify(result.breakdown),
+          status: "new",
+        },
+      });
+      savedId = saved.id;
+    } catch {
+      /* DB unavailable — still return the estimate */
+    }
 
     return NextResponse.json({
-      id: saved.id,
+      id: savedId,
       complexityScore: result.complexityScore,
       complexityLabel: result.complexityLabel,
       estimatedPrice: result.estimatedPrice,
