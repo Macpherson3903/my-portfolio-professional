@@ -1,10 +1,28 @@
 import Link from "next/link";
+import PrismaSetupHelp from "@/components/admin/PrismaSetupHelp";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPostsPage() {
-  const posts = await prisma.post.findMany({ orderBy: { updatedAt: "desc" } });
+  let posts: Awaited<ReturnType<typeof prisma.post.findMany>> = [];
+  let loadError: string | null = null;
+
+  try {
+    posts = await prisma.post.findMany({ orderBy: { updatedAt: "desc" } });
+  } catch (e) {
+    console.error("[AdminPostsPage]", e);
+    loadError = e instanceof Error ? e.message : "Database error";
+  }
+
+  if (loadError) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold">Posts</h1>
+        <PrismaSetupHelp technicalDetail={process.env.NODE_ENV === "development" ? loadError : undefined} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
