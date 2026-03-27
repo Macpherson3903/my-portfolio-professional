@@ -80,13 +80,7 @@ async function main() {
   const ok = await seedFromGitHub();
   if (!ok) await seedFallbackProjects();
 
-  await prisma.post.upsert({
-    where: { slug: "welcome-to-my-blog" },
-    create: {
-      slug: "welcome-to-my-blog",
-      title: "Welcome to my blog",
-      excerpt: "How this site is built and what to expect.",
-      content: `# Welcome
+  const welcomeContent = `# Welcome
 
 This is a sample post. Edit or delete it from **Admin**.
 
@@ -94,12 +88,27 @@ This is a sample post. Edit or delete it from **Admin**.
 
 - Markdown posts
 - Projects catalog
-- Quote estimator`,
+- Quote estimator`;
+
+  await prisma.post.upsert({
+    where: { slug: "welcome-to-my-blog" },
+    create: {
+      slug: "welcome-to-my-blog",
+      title: "Welcome to my blog",
+      excerpt: "How this site is built and what to expect.",
+      content: welcomeContent,
       published: true,
       publishedAt: new Date(),
       tags: "meta,nextjs",
     },
-    update: {},
+    update: {
+      title: "Welcome to my blog",
+      excerpt: "How this site is built and what to expect.",
+      content: welcomeContent,
+      published: true,
+      publishedAt: new Date(),
+      tags: "meta,nextjs",
+    },
   });
 }
 

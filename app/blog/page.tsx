@@ -19,10 +19,25 @@ export default async function BlogIndexPage() {
         <h1 className="text-4xl font-bold mb-2">Blog</h1>
         <p className="text-neutral-400 mb-10">Notes, tutorials, and updates.</p>
         {!posts.length ? (
-          <p className="text-neutral-500">
-            No published posts yet. Confirm <code className="text-neutral-400">DATABASE_URL</code> on Vercel and run{" "}
-            <code className="text-neutral-400">npx prisma db push</code> plus seed if needed.
-          </p>
+          <div className="rounded-xl border border-white/10 bg-neutral-950/80 p-6 text-neutral-400 text-sm space-y-4 leading-relaxed">
+            <p>
+              No published posts are in the database yet. New Neon/Vercel setups need tables and a first post:
+            </p>
+            <ol className="list-decimal pl-5 space-y-2 text-neutral-500">
+              <li>
+                Use the same <code className="text-neutral-300">DATABASE_URL</code> as Vercel in your local{" "}
+                <code className="text-neutral-300">.env</code>.
+              </li>
+              <li>
+                Run <code className="text-neutral-300">npm run db:setup</code> (runs <code className="text-neutral-300">prisma db push</code>{" "}
+                + seed). This creates the “Welcome to my blog” post.
+              </li>
+              <li>
+                Or sign in at <Link href="/admin/login" className="text-red-400 hover:underline">Admin</Link> and publish
+                a post there.
+              </li>
+            </ol>
+          </div>
         ) : (
           <ul className="space-y-8">
             {posts.map((p) => (

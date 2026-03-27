@@ -23,12 +23,13 @@ ADMIN_SECRET="your-admin-login-secret"
 SESSION_SECRET="your-cookie-signing-secret"
 ```
 
-6. Create tables and seed sample data:
+6. Create tables and seed sample data (one command):
 
 ```bash
-npm run db:push
-npm run db:seed
+npm run db:setup
 ```
+
+Same as `npx prisma db push` followed by `npx prisma db seed`. **Run this once per database** (local Neon branch and production), using the matching `DATABASE_URL`.
 
 7. Run the dev server:
 
@@ -73,6 +74,7 @@ SQLite **does not work** on Vercel (no persistent writable database file). Use a
 | `npm run test` | Vitest unit tests |
 | `npm run db:push` | Apply Prisma schema to the database |
 | `npm run db:seed` | Seed projects and sample post |
+| `npm run db:setup` | `db push` + `db seed` (use for a fresh Neon DB) |
 
 ## Routes
 

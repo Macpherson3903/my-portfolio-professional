@@ -12,7 +12,7 @@ export async function getPublishedPosts(): Promise<BlogPostListItem[]> {
   try {
     return await prisma.post.findMany({
       where: { published: true },
-      orderBy: { publishedAt: "desc" },
+      orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
       select: {
         slug: true,
         title: true,
@@ -21,7 +21,8 @@ export async function getPublishedPosts(): Promise<BlogPostListItem[]> {
         tags: true,
       },
     });
-  } catch {
+  } catch (e) {
+    console.error("[getPublishedPosts]", e);
     return [];
   }
 }
@@ -31,7 +32,8 @@ export async function getPublishedPostBySlug(slug: string) {
     return await prisma.post.findUnique({
       where: { slug, published: true },
     });
-  } catch {
+  } catch (e) {
+    console.error("[getPublishedPostBySlug]", slug, e);
     return null;
   }
 }
