@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { getMetadataBase, getPublicSiteUrl } from "@/lib/site-url";
 import "./globals.css";
@@ -17,8 +17,15 @@ const geistMono = Geist_Mono({
 
 const siteUrl = getPublicSiteUrl();
 
+export const viewport: Viewport = {
+  themeColor: "#0a0a0a",
+};
+
 export const metadata: Metadata = {
   metadataBase: getMetadataBase(),
+  alternates: {
+    canonical: siteUrl,
+  },
   title: {
     default: "Macpherson Dieze | Full Stack Developer",
     template: "%s | Macpherson Dieze",
@@ -49,7 +56,7 @@ export const metadata: Metadata = {
         alt: "Macpherson Portfolio",
       },
     ],
-    locale: "en_NGN",
+    locale: "en_US",
     type: "website",
   },
   twitter: {
@@ -76,10 +83,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <meta name="theme-color" content="#0a0a0a" />
-        <link rel="canonical" href={siteUrl} />
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white font-mono`}
       >
