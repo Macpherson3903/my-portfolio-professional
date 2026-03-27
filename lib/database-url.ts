@@ -7,12 +7,61 @@ function stripEnvValue(raw: string): string {
   return s;
 }
 
-const ENV_KEYS = [
-  "DATABASE_URL",
+function isNeonHost(hostname: string): boolean {
+  const h = hostname.toLowerCase();
+  return h.endsWith(".neon.tech") || h.includes(".aws.neon.tech");
+}
+
+function isNeonPoolerHost(hostname: string): boolean {
+  return isNeonHost(hostname) && hostname.toLowerCase().includes("-pooler");
+}
+
+/**
+ * Neon + Prisma pooler: need `pgbouncer=true`.
+ * `channel_binding=require` (common in Neon dashboard copy) breaks many Node/pg stacks — strip `require` only.
+ * Extra timeout helps when the Neon compute is waking from suspend.
+ */
+export function normalizePostgresUrlForPrisma(url: string): string {
+  if (!/^postgres(ql)?:\/\//i.test(url)) return url;
+  try {
+    const u = new URL(url);
+    if (!isNeonHost(u.hostname)) return url;
+
+    const params = u.searchParams;
+    if (!params.has("sslmode")) {
+      params.set("sslmode", "require");
+    }
+    if (params.get("channel_binding") === "require") {
+      params.delete("channel_binding");
+    }
+    if (!params.has("connect_timeout")) {
+      params.set("connect_timeout", "30");
+    }
+    if (isNeonPoolerHost(u.hostname) && !params.has("pgbouncer")) {
+      params.set("pgbouncer", "true");
+    }
+
+    u.search = params.toString();
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+
+/**
+ * Env keys checked in order. Neon’s Vercel integration often uses a `DATABASE_` prefix
+ * (e.g. DATABASE_POSTGRES_PRISMA_URL). Pooled URLs are preferred for serverless.
+ */
+export const DATABASE_URL_ENV_KEYS = [
+  "DATABASE_POSTGRES_PRISMA_URL",
   "POSTGRES_PRISMA_URL",
+  "DATABASE_URL",
+  "DATABASE_POSTGRES_URL",
   "POSTGRES_URL",
   "PRISMA_DATABASE_URL",
   "NEON_DATABASE_URL",
+  "DATABASE_POSTGRES_URL_NON_POOLING",
+  "DATABASE_POSTGRES_URL_NO_SSL",
 ] as const;
 
 /**
@@ -20,14 +69,14 @@ const ENV_KEYS = [
  * Handles quoted values, Neon/Vercel alternate env names, and `user@host/db` strings missing `postgresql://`.
  */
 export function resolveDatabaseUrl(): string | null {
-  for (const key of ENV_KEYS) {
+  for (const key of DATABASE_URL_ENV_KEYS) {
     const raw = process.env[key];
     if (!raw) continue;
     let url = stripEnvValue(raw);
     if (!url) continue;
 
     if (url.startsWith("postgres://") || url.startsWith("postgresql://")) {
-      return url;
+      return normalizePostgresUrlForPrisma(url);
     }
 
     if (url.startsWith("file:")) {
@@ -49,7 +98,7 @@ export function resolveDatabaseUrl(): string | null {
         url = `postgresql://${url}`;
       }
       if (url.startsWith("postgres://") || url.startsWith("postgresql://")) {
-        return url;
+        return normalizePostgresUrlForPrisma(url);
       }
     }
   }

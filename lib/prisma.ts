@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { resolveDatabaseUrl } from "@/lib/database-url";
+import { DATABASE_URL_ENV_KEYS, resolveDatabaseUrl } from "@/lib/database-url";
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
@@ -10,8 +10,8 @@ function createPrisma() {
   const resolved = resolveDatabaseUrl();
   if (!resolved) {
     console.error(
-      "[prisma] Missing or invalid DATABASE_URL. Use postgresql:// or postgres:// from Neon (Connection details). " +
-        "Tried env keys: DATABASE_URL, POSTGRES_PRISMA_URL, POSTGRES_URL. Remove quotes around the URL if copy-pasted."
+      "[prisma] Missing or invalid Postgres URL. Use postgresql:// or postgres:// from Neon (Connection details). " +
+        `Tried env keys: ${DATABASE_URL_ENV_KEYS.join(", ")}. Remove quotes around the URL if copy-pasted.`
     );
   }
   const url = resolved ?? PLACEHOLDER_URL;
