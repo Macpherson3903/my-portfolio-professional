@@ -14,8 +14,10 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://macpherson.vercel.app";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://yourdomain.com"),
+  metadataBase: new URL(siteUrl),
   title: {
     default: "Macpherson Dieze | Full Stack Developer",
     template: "%s | Macpherson Dieze",
@@ -36,7 +38,7 @@ export const metadata: Metadata = {
     title: "Macpherson Dieze | Full Stack Developer",
     description:
       "Building scalable and high-performance web applications with modern technologies.",
-    url: "https://yourdomain.com",
+    url: siteUrl,
     siteName: "Macpherson Portfolio",
     images: [
       {
@@ -75,7 +77,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta name="theme-color" content="#0a0a0a" />
-        <link rel="canonical" href="https://yourdomain.com" />
+        <link rel="canonical" href={siteUrl} />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white font-mono`}

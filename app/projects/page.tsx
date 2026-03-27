@@ -1,4 +1,4 @@
-import Header from "@/components/Header";
+import SiteShell from "@/components/SiteShell";
 import ProjectsGrid from "@/components/ProjectsGrid";
 import { getAllProjects } from "@/lib/projects-data";
 import type { Metadata } from "next";
@@ -14,9 +14,8 @@ export default async function ProjectsPage() {
   const projects = await getAllProjects();
 
   return (
-    <>
-      <Header />
-      <section className="min-h-screen bg-black pt-8 pb-20 px-6">
+    <SiteShell>
+      <section className="bg-black pt-8 pb-12 px-6">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Projects</h1>
           <p className="text-neutral-400 mb-12 max-w-2xl">
@@ -29,6 +28,6 @@ export default async function ProjectsPage() {
           )}
         </div>
       </section>
-    </>
+    </SiteShell>
   );
 }

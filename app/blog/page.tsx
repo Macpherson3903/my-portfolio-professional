@@ -1,4 +1,4 @@
-import Header from "@/components/Header";
+import SiteShell from "@/components/SiteShell";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import type { Metadata } from "next";
@@ -24,9 +24,8 @@ export default async function BlogIndexPage() {
   });
 
   return (
-    <>
-      <Header />
-      <main className="max-w-3xl mx-auto px-6 pt-10 pb-8">
+    <SiteShell>
+      <main className="max-w-3xl mx-auto px-6 pt-10 pb-8 bg-black">
         <h1 className="text-4xl font-bold mb-2">Blog</h1>
         <p className="text-neutral-400 mb-10">Notes, tutorials, and updates.</p>
         {!posts.length ? (
@@ -48,6 +47,6 @@ export default async function BlogIndexPage() {
           </ul>
         )}
       </main>
-    </>
+    </SiteShell>
   );
 }

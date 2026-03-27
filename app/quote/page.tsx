@@ -1,4 +1,4 @@
-import Header from "@/components/Header";
+import SiteShell from "@/components/SiteShell";
 import QuoteForm from "@/components/QuoteForm";
 import type { Metadata } from "next";
 
@@ -9,9 +9,8 @@ export const metadata: Metadata = {
 
 export default function QuotePage() {
   return (
-    <>
-      <Header />
-      <main className="min-h-screen bg-black pt-8 pb-24 px-6">
+    <SiteShell>
+      <main className="bg-black pt-8 pb-12 px-6">
         <div className="max-w-5xl mx-auto mb-10">
           <h1 className="text-4xl md:text-5xl font-bold mb-3">Request a quote</h1>
           <p className="text-neutral-400 max-w-2xl">
@@ -21,6 +20,6 @@ export default function QuotePage() {
         </div>
         <QuoteForm />
       </main>
-    </>
+    </SiteShell>
   );
 }

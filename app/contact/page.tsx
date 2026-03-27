@@ -1,4 +1,4 @@
-import Header from "@/components/Header";
+import SiteShell from "@/components/SiteShell";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -9,9 +9,8 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <>
-      <Header />
-      <section className="min-h-screen flex flex-col items-center justify-center px-6 py-20 bg-black">
+    <SiteShell>
+      <section className="flex flex-col items-center justify-center px-6 py-20 md:py-28 bg-black min-h-[60vh]">
         <h1 className="text-4xl md:text-5xl font-bold mb-4 text-center">Contact</h1>
         <p className="text-neutral-400 text-center max-w-md mb-8">
           Prefer email or request a quote for project work.
@@ -32,6 +31,6 @@ export default function ContactPage() {
         </div>
         <p className="text-neutral-500 text-sm mt-10">Phone: 08069052314</p>
       </section>
-    </>
+    </SiteShell>
   );
 }

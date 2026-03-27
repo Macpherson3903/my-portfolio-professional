@@ -1,4 +1,4 @@
-import Header from "@/components/Header";
+import SiteShell from "@/components/SiteShell";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProjectBySlug } from "@/lib/projects-data";
@@ -24,9 +24,8 @@ export default async function ProjectDetailPage({ params }: Props) {
   if (!p) notFound();
 
   return (
-    <>
-      <Header />
-      <article className="min-h-screen bg-black pt-8 pb-20 px-6">
+    <SiteShell>
+      <article className="bg-black pt-8 pb-12 px-6">
         <div className="max-w-3xl mx-auto">
           <Link href="/projects" className="text-sm text-red-500 hover:text-red-400 mb-6 inline-block">
             Back to projects
@@ -66,6 +65,6 @@ export default async function ProjectDetailPage({ params }: Props) {
           </div>
         </div>
       </article>
-    </>
+    </SiteShell>
   );
 }

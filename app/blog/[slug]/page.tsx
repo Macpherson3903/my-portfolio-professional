@@ -1,4 +1,4 @@
-import Header from "@/components/Header";
+import SiteShell from "@/components/SiteShell";
 import MarkdownPost from "@/components/blog/MarkdownPost";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -30,9 +30,8 @@ export default async function BlogPostPage({ params }: Props) {
   if (!post) notFound();
 
   return (
-    <>
-      <Header />
-      <article className="max-w-3xl mx-auto px-6 pt-10 pb-8">
+    <SiteShell>
+      <article className="max-w-3xl mx-auto px-6 pt-10 pb-8 bg-black">
         <Link href="/blog" className="text-sm text-red-500 hover:text-red-400 mb-6 inline-block">
           Back to blog
         </Link>
@@ -43,6 +42,6 @@ export default async function BlogPostPage({ params }: Props) {
         </p>
         <MarkdownPost content={post.content} />
       </article>
-    </>
+    </SiteShell>
   );
 }
