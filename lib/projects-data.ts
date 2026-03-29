@@ -1,5 +1,10 @@
+import {
+  fetchLanguagesForGithubRepoUrl,
+  fetchLanguagesFromLanguagesUrl,
+  githubApiHeaders,
+} from "@/lib/github-languages";
 import { prisma } from "@/lib/prisma";
-import { slugify } from "@/lib/slug";
+import { orderProjectsByLiveThenRecency } from "@/lib/project-sort";
 
 export type ProjectListItem = {
   id: string;
@@ -12,6 +17,8 @@ export type ProjectListItem = {
   image: string | null;
   featured: boolean;
   status: string;
+  /** ISO timestamp for "recent first" ordering (DB `updatedAt`, GitHub last push). */
+  lastActivityAt: string;
 };
 
 function parseStack(raw: string | null): string[] {
@@ -39,11 +46,26 @@ function mapRow(p: {
   image: string | null;
   featured: boolean;
   status: string;
+  updatedAt: Date;
 }): ProjectListItem {
+  const { updatedAt, stack: rawStack, ...rest } = p;
   return {
-    ...p,
-    stack: parseStack(p.stack),
+    ...rest,
+    stack: parseStack(rawStack),
+    lastActivityAt: updatedAt.toISOString(),
   };
+}
+
+/** Fill `stack` from GitHub Languages API when DB has no stack but `repoUrl` is github.com. */
+async function enrichStackFromGitHubIfEmpty(project: ProjectListItem): Promise<ProjectListItem> {
+  if (project.stack.length > 0) return project;
+  const langs = await fetchLanguagesForGithubRepoUrl(project.repoUrl);
+  if (langs.length > 0) return { ...project, stack: langs };
+  return project;
+}
+
+async function enrichProjectsStack(items: ProjectListItem[]): Promise<ProjectListItem[]> {
+  return Promise.all(items.map(enrichStackFromGitHubIfEmpty));
 }
 
 type GhRepo = {
@@ -59,10 +81,11 @@ type GhRepo = {
 
 async function reposFromGitHub(maxRepos: number): Promise<ProjectListItem[]> {
   try {
+    const perPage = Math.min(100, maxRepos);
     const res = await fetch(
-      `https://api.github.com/users/macpherson3903/repos?per_page=${Math.min(100, maxRepos)}&sort=updated`,
+      `https://api.github.com/users/macpherson3903/repos?per_page=${perPage}&sort=pushed&direction=desc`,
       {
-        headers: { Accept: "application/vnd.github+json" },
+        headers: githubApiHeaders(),
         next: { revalidate: 3600 },
       }
     );
@@ -76,16 +99,7 @@ async function reposFromGitHub(maxRepos: number): Promise<ProjectListItem[]> {
 
     return await Promise.all(
       sorted.map(async (repo) => {
-        let languages: string[] = [];
-        try {
-          const lr = await fetch(repo.languages_url, { next: { revalidate: 3600 } });
-          if (lr.ok) {
-            const langs = (await lr.json()) as Record<string, number>;
-            languages = Object.keys(langs);
-          }
-        } catch {
-          languages = [];
-        }
+        const languages = await fetchLanguagesFromLanguagesUrl(repo.languages_url);
         return {
           id: `gh-${repo.id}`,
           slug: repo.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") || `repo-${repo.id}`,
@@ -97,6 +111,7 @@ async function reposFromGitHub(maxRepos: number): Promise<ProjectListItem[]> {
           image: null,
           featured: true,
           status: "completed",
+          lastActivityAt: repo.pushed_at,
         } satisfies ProjectListItem;
       })
     );
@@ -109,28 +124,34 @@ export async function getFeaturedProjects(): Promise<ProjectListItem[]> {
   try {
     const rows = await prisma.project.findMany({
       where: { featured: true },
-      orderBy: { updatedAt: "desc" },
+      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
       take: 6,
     });
-    if (rows.length) return rows.map(mapRow);
+    if (rows.length) {
+      const enriched = await enrichProjectsStack(rows.map(mapRow));
+      return orderProjectsByLiveThenRecency(enriched).slice(0, 6);
+    }
   } catch {
     /* database unavailable or schema missing */
   }
-  const gh = await reposFromGitHub(6);
-  return gh.length ? gh : [];
+  const gh = await reposFromGitHub(50);
+  return gh.length ? orderProjectsByLiveThenRecency(gh).slice(0, 6) : [];
 }
 
 export async function getAllProjects(): Promise<ProjectListItem[]> {
   try {
     const rows = await prisma.project.findMany({
-      orderBy: { updatedAt: "desc" },
+      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
     });
-    if (rows.length) return rows.map(mapRow);
+    if (rows.length) {
+      const enriched = await enrichProjectsStack(rows.map(mapRow));
+      return orderProjectsByLiveThenRecency(enriched);
+    }
   } catch {
     /* fallback */
   }
   const gh = await reposFromGitHub(100);
-  return gh.length ? gh : [];
+  return gh.length ? orderProjectsByLiveThenRecency(gh) : [];
 }
 
 async function findGitHubRepoBySlug(slug: string): Promise<ProjectListItem | null> {
@@ -141,9 +162,10 @@ async function findGitHubRepoBySlug(slug: string): Promise<ProjectListItem | nul
 export async function getProjectBySlug(slug: string): Promise<ProjectListItem | null> {
   try {
     const row = await prisma.project.findUnique({ where: { slug } });
-    if (row) return mapRow(row);
+    if (row) return enrichStackFromGitHubIfEmpty(mapRow(row));
   } catch {
     /* fallback */
   }
-  return findGitHubRepoBySlug(slug);
+  const fromGh = await findGitHubRepoBySlug(slug);
+  return fromGh ? enrichStackFromGitHubIfEmpty(fromGh) : null;
 }

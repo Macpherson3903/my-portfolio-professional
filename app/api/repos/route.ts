@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { fetchLanguagesFromLanguagesUrl, githubApiHeaders } from "@/lib/github-languages";
 
 type GitHubRepo = {
   fork: boolean;
@@ -13,7 +14,9 @@ type GitHubRepo = {
 
 export async function GET() {
   try {
-    const res = await fetch("https://api.github.com/users/macpherson3903/repos");
+    const res = await fetch("https://api.github.com/users/macpherson3903/repos", {
+      headers: githubApiHeaders(),
+    });
     if (!res.ok) return NextResponse.json({ error: "Failed to fetch repos" }, { status: res.status });
 
     const data = (await res.json()) as unknown;
@@ -25,15 +28,10 @@ export async function GET() {
       .slice(0, 6);
 
     const reposWithLanguages = await Promise.all(
-      sorted.map(async (repo) => {
-        try {
-          const langRes = await fetch(repo.languages_url);
-          const langsData = (await langRes.json()) as Record<string, number>;
-          return { ...repo, languages: Object.keys(langsData) };
-        } catch {
-          return { ...repo, languages: [] as string[] };
-        }
-      })
+      sorted.map(async (repo) => ({
+        ...repo,
+        languages: await fetchLanguagesFromLanguagesUrl(repo.languages_url),
+      }))
     );
 
     return NextResponse.json(reposWithLanguages);

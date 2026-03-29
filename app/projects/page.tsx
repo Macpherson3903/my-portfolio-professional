@@ -15,14 +15,19 @@ export default async function ProjectsPage() {
 
   return (
     <SiteShell>
-      <section className="bg-black pt-8 pb-12 px-6">
+      <section className="bg-black pt-6 sm:pt-8 pb-10 sm:pb-14 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Projects</h1>
-          <p className="text-neutral-400 mb-12 max-w-2xl">
-            A curated list of work and open-source repositories. Search, sort, and open details.
-          </p>
+          <header className="mb-8 sm:mb-10 max-w-2xl">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3 leading-tight">Projects</h1>
+            <p className="text-sm sm:text-base text-neutral-400 leading-relaxed">
+              Work and open-source repos. Projects with a live site are listed first, then by recent activity.
+              Search, sort by title, paginate—twenty cards per page.
+            </p>
+          </header>
           {!projects.length ? (
-            <p className="text-neutral-500">No projects yet.</p>
+            <p className="text-neutral-500 text-sm sm:text-base py-12 text-center rounded-xl border border-dashed border-white/15">
+              No projects yet.
+            </p>
           ) : (
             <ProjectsGrid projects={projects} />
           )}

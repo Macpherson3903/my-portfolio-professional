@@ -1,5 +1,11 @@
 export const MIN_QUOTE_USD = 150;
 
+/** Minimum description length for a meaningful estimate (API + client). */
+export const QUOTE_IDEA_MIN_CHARS = 30;
+
+/** Upper bound to limit abuse and oversized payloads. */
+export const QUOTE_IDEA_MAX_CHARS = 12_000;
+
 export type QuoteBreakdownItem = { label: string; points: number };
 
 export type QuoteResult = {

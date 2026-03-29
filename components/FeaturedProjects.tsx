@@ -28,9 +28,10 @@ export default async function FeaturedProjects() {
             name={repo.title}
             slug={repo.slug}
             description={repo.description}
-            languages={repo.stack.length ? repo.stack : ["Repo"]}
+            languages={repo.stack}
             githubUrl={repo.repoUrl ?? "#"}
             liveUrl={repo.liveUrl}
+            hideLanguagesWhenEmpty
           />
         ))}
       </div>
